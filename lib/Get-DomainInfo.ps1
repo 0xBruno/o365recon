@@ -1,13 +1,16 @@
 function Get-DomainInfo {
-    Write-Output "Retrieving Domain Information:"
-    write-host -NoNewline "`t`t`tRetrieving O365 Domain Information ... "
-    Get-MsolDomain | Format-Table -Auto | Out-File -FilePath .\${CURRENTJOB}.O365.DomainInfo.txt
-    Write-Output "`t`tDONE"
+    param([string]$outputPath)
+
+    Write-Output "[*] Retrieving O365 Domain Information..."
+    "<h2>Get-MsolDomain</h2>" | Out-File -Append -FilePath $outputPath
+    ConvertTo-Html -InputObject (Get-MsolDomain) -As List | Out-File -Append -FilePath $outputPath
+    Write-Output "[*] DONE"
 
     if ($connectedToAzureAD) {
-        write-host -NoNewline "`t`t`tRetrieving AzureAD Domain Information ... "
-        Get-AzureADDomain | Format-Table | Out-file -FilePath .\${CURRENTJOB}.AzureAD.DomainInfo.txt
-        Write-Output "`tDONE"
+        Write-Output "[*] Retrieving AzureAD Domain Information ... " 
+        "<h2>Get-AzureADDomain</h2>" | Out-File -Append -FilePath $outputPath
+        ConvertTo-Html -InputObject (Get-AzureADDomain) -As List | Out-File -Append -FilePath $outputPath
+        Write-Output "[*] DONE"
     }
     
 }

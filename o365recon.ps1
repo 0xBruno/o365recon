@@ -24,7 +24,6 @@ param(
 
 [boolean]$global:connectedToAzureAD = $false
 [boolean]$global:connectedToO365 = $false
-[string]$global:currentJob = ""
 
 # Autoloader. 
 $libFolder = $PSScriptRoot + "\lib\"
@@ -34,16 +33,30 @@ foreach ($module in $modules) { $modulePath = $libFolder + $module; Import-Modul
 # Connect to Microsoft services.
 Initialize-Dependencies
 
-exit 
+# Setup our working directory, returns the output path
+$outputPath = Initialize-OutputDir
+# e.g. C:\Users\user\o365recon\output\example.Report.html
+$reportPath = $outputPath + ".Report.html"
+$projectName =  Split-Path -Path $outputPath -Leaf
 
-# Setup our working directory
-Initialize-WorkingDirectory.ps1
+
+# Report header
+"
+<h1>O365 Recon Report</h1>
+<code>Project: $projectName</code>
+<br>
+<code>Date: $(Get-Date)</code>
+<br>
+<code><i>Note: This tools summarizes the most relevant recon information.
+For full information run the command in the header of each section.</i></code>
+<br>
+" | Out-File -Append -FilePath $reportPath
 
 # Get company information.
-Get-CompanyInfo
+Get-CompanyInfo $reportPath
 
 # Get domain information.
-Get-DomainInfo
+Get-DomainInfo $reportPath
 
 # Get user information.
 Get-UserInfo

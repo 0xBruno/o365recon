@@ -1,31 +1,51 @@
 function Get-CompanyInfo { 
-    Write-Host -NoNewline "`t`t`tRetrieving Company Info ... "
-    $companyinfo = Get-MsolCompanyInformation
-    $companyinfo | Select-Object -Property * |  Out-File -Append -FilePath .\${CURRENTJOB}.O365.CompanyInfo.txt
-    Write-Output "`t`t`tDONE"
+    param([string]$outputPath)
 
+    
+    Write-Host -NoNewline "[*] Retrieving Company Info ... "
 
-    Write-Output "------------------------------------------------------------------------------------"
-    Write-Output "Overview" | Tee-Object -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "Company Name: $($companyinfo.DisplayName)" | Tee-Object -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "Tenant ID: $($companyinfo.ObjectId.Guid)" | Tee-Object -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "Initial Domain: $($companyinfo.InitialDomain)" | Tee-Object -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "Address: $($companyinfo.Street), $($companyinfo.city), $($companyinfo.state) $($companyinfo.PostalCode)" | Tee-Object -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "Phone Number: $($companyinfo.TelephoneNumber)" | Out-File -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "Technical Contact Addresses: $($companyinfo.TechnicalNotificationEmails)" | Tee-Object -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "Marketing Contact Addresses: $($companyinfo.MarketingNotificationEmails)" | Out-File -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "------------------------------------------------------------------------------------" | Out-File -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "Directory Sync"  | Out-File -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "Directory Synchronization Enabled: $($companyinfo.DirectorySynchronizationEnabled)"  | Out-File -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "Directory Synchronization Status: $($companyinfo.DirectorySynchronizationStatus)"  | Out-File -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "Directory Synchronization Service Account: $($companyinfo.DirSyncServiceAccount)"  | Out-File -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "Last Dir Sync Time: $($companyinfo.LastDirSyncTime)`n"  | Out-File -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "Password Sync" | Out-File -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "Password Synchronization Enabled: $($companyinfo.PasswordSynchronizationEnabled)"  | Out-File -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "Last Password Sync Time: $($companyinfo.LastPasswordSyncTime)`n"  | Out-File -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "------------------------------------------------------------------------------------" | Out-File -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "Licensing Information" | Out-File -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Get-MsolSubscription  | Out-File -Append -FilePath .\${CURRENTJOB}.Report.txt
-    Write-Output "------------------------------------------------------------------------------------" | Tee-Object -Append -FilePath .\${CURRENTJOB}.Report.txt
+    # Selecting properties and renaming to something report friendlier
+    $msolCompanyInfo = Get-MsolCompanyInformation | Select-Object @{
+        Name='Company Name'; 
+        Expression={$_.DisplayName}
+    }, @{
+        Name='Tenant ID'; 
+        Expression={$_.ObjectId.Guid}
+    },  @{
+        Name='Initial Domain'; 
+        Expression={$_.InitialDomain}
+    },  @{
+        Name='Address'; 
+        Expression={$_.Street, $_.City, $_.State, $_.PostalCode}
+    },  @{
+        Name='Phone Number'; 
+        Expression={$_.TelephoneNumber}
+    },  @{
+        Name='Technical Contact Addresses'; 
+        Expression={$_.TechnicalNotificationEmails}
+    },  @{
+        Name='Marketing Contact Addresses'; 
+        Expression={$_.MarketingNotificationEmails}
+    },  @{
+        Name='Directory Synchronization Enabled'; 
+        Expression={$_.DirectorySynchronizationEnabled}
+    },  @{
+        Name='Directory Synchronization Status'; 
+        Expression={$_.DirectorySynchronizationStatus}
+    },  @{
+        Name='Last Dir Sync Time'; 
+        Expression={$_.LastDirSyncTime}
+    },  @{
+        Name='Password Synchronization Enabled'; 
+        Expression={$_.PasswordSynchronizationEnabled}
+    },  @{
+        Name='Last Password Sync Time'; 
+        Expression={$_.LastPasswordSyncTime}
+    }
+
+    "<h2>Get-MsolCompanyInformation</h2>" | Out-File -Append -FilePath $outputPath
+    ConvertTo-Html -InputObject $msolCompanyInfo -As List | Out-File -Append -FilePath $outputPath
+    "<h2>Get-MsolSubscription</h2>" | Out-File -Append -FilePath $outputPath
+    ConvertTo-Html -InputObject (Get-MsolSubscription) -As List | Out-File -Append -FilePath $outputPath
     
 }
