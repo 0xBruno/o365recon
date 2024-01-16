@@ -1,16 +1,19 @@
 function Get-AADApplications {
-    if ($connectedToAzureAD) {
-        Write-Output "Checking Applications in Azure AD:"
-        Write-Host -NoNewline "`t`t`tRetrieving a list of AzureAD Applications ... "   
+    param([string]$outputPath)
+
+    if ($global:connectedToAzureAD) {
+        Write-Output "[*] Checking Applications in Azure AD:"
+        Write-Host  "[*] Retrieving a list of AzureAD Applications ... "   
+      
+        "<h2>Get-AzureADApplication</h2>" | Out-File -Append -FilePath $outputPath
         $azureadapps = Get-AzureADApplication -All:$true
-        $azureadapps | Out-File -Append -FilePath .\${CURRENTJOB}.AzureAD.ApplicationList.txt
-        Write-Output "Application Information" | Out-File -Append -FilePath .\${CURRENTJOB}.Report.txt
-        $azureadapps | Out-File -Append -FilePath .\${CURRENTJOB}.Report.txt
-        Write-Output "`tDONE"
+        ConvertTo-Html -InputObject $azureadapps -As List | Out-File -Append -FilePath $outputPath
+        Write-Host -ForegroundColor Yellow $azureadapps
     
-        Write-Host -NoNewline "`t`t`tCreating user->application mapping ..."
+        Write-Host  "[*] Creating user->application mapping ..."
         #This pulls down a list of devices and looks up corresponding owner
-        $azureadapps | ForEach-Object { $OwnerObject = Get-AzureADApplicationOwner -ObjectId  $_.ObjectId; Write-Output "$($OwnerObject.UserPrincipalName),$($OwnerObject.DisplayName),$($_.DisplayName)" } | Sort-Object | Out-File -FilePath .\${CURRENTJOB}.AzureAD.Application_Owners.csv
-        Write-Output "`t`tDONE"
+        $azureadapps | ForEach-Object { 
+            $OwnerObject = Get-AzureADApplicationOwner -ObjectId  $_.ObjectId; 
+            Write-Output "$($OwnerObject.UserPrincipalName),$($OwnerObject.DisplayName),$($_.DisplayName)" } | Sort-Object | Out-File -Append -FilePath $outputPath
     }
 }

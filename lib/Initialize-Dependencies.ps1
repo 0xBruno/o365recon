@@ -4,10 +4,10 @@ function Initialize-Dependencies {
     # $global:connectedToO365
     
     Write-Output "Connecting to Microsoft services:"
-    Write-Host -NoNewline "[*] Checking for MsOnline Module ... "
+    Write-Host  "[*] Checking for MsOnline Module ... "
 
+    # TODO: rewrite
     if (Get-Module -ListAvailable -Name MsOnline) {
-        Write-Host "[*] DONE"
     }
     else {
         Write-Host "[*] FAILED"
@@ -15,9 +15,8 @@ function Initialize-Dependencies {
         exit
     }
 
-    Write-Host -NoNewline "[*] Checking for AzureAD Module ... "
+    Write-Host  "[*] Checking for AzureAD Module ... "
     if (Get-Module -ListAvailable -Name AzureAD) {
-        Write-Host "[*] DONE"
     }
     else {
         Write-Host "[*] FAILED"
@@ -32,8 +31,7 @@ function Initialize-Dependencies {
         Write-Host "[*] Connecting to AzureAD with Connect-AzureAD"
         Connect-AzureAD -Credential $userauth -WarningAction:SilentlyContinue -ErrorAction Stop > $null
         $global:connectedToAzureAD = $true
-        Write-Host "[*] DONE"
-        Write-Host -NoNewline "[*] Connecting to O365  ... "
+        Write-Host  "[*] Connecting to O365  ... "
         try {
             $logintoken = [Microsoft.Open.Azure.AD.CommonLibrary.AzureSession]::AccessTokens
             Connect-MsolService -AdGraphAccessToken $logintoken.AccessToken.AccessToken
@@ -44,15 +42,13 @@ function Initialize-Dependencies {
             Connect-MsolService
             $global:connectedToO365 = $true
         }
-        Write-Host "[*] DONE"
 
     }
     else {
         try {
-            Write-Host -NoNewline "[*] Connecting to O365  ... "
+            Write-Host  "[*] Connecting to O365  ... "
             Connect-MsolService -ErrorAction Stop -Credential $userauth > $null
             $global:connectedToO365 = $true
-            Write-Host "[*] DONE"
         }
         catch {
             Write-Host "Could not connect to O365. Have you run Install-Module MsOnline ?"

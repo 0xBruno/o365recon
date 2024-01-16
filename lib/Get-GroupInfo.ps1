@@ -1,28 +1,36 @@
 function Get-GroupInfo {
-    Write-Output "Retrieving Group Information:"
-    Write-Host -NoNewline "`t`t`tRetrieving O365 Group Names ... "
-    $grouplist = Get-MsolGroup -All
-    Write-Output "`t`tDONE"
+    param([string]$outputPath)
 
-    if ($connectedToAzureAD) {
-        Write-Host -NoNewline "`t`t`tRetrieving AzureAD Group Names ... "
-        $azuregrouplist = Get-AzureADGroup -All $true
-        Write-Output "`t`tDONE"
+    Write-Output "[*] Retrieving Group Information"
+    Write-Host  "[*] Retrieving O365 Group Names ... "
+    
+    $msolGroups = Get-MsolGroup -All
+
+    if ($global:connectedToAzureAD) {
+        Write-Host  "[*] Retrieving AzureAD Group Names ... "
+        $azGroups = Get-AzureADGroup -All $true
     }
 
 
-    Write-Host -NoNewline "`t`t`tCreating Simple O365 Group List ... "
-    foreach ($line in $grouplist) { $line.DisplayName.Trim(" ") | Out-File -Append -FilePath .\${CURRENTJOB}.O365.Groups.txt } 
-    Write-Output "`t`tDONE"
+    Write-Host  "[*] Creating Simple O365 Group List ... "
+    foreach ($group in $msolGroups) { 
+        Write-Host -ForegroundColor Yellow $group.DisplayName
+    } 
 
-    if ($connectedToAzureAD) {
-        Write-Host -NoNewline "`t`t`tCreating Simple AzureAD Group List ... "
-        foreach ($line in $azuregrouplist) { $line.DisplayName.Trim(" ") | Out-File -Append -FilePath .\${CURRENTJOB}.AzureAD.Groups.txt }
-        Write-Output "`t`tDONE"
+    
+    if ($global:connectedToAzureAD) {
+        Write-Host  "[*] Creating Simple AzureAD Group List ... "
+        foreach ($azGroup in $azGroups) { 
+            Write-Host -ForegroundColor Yellow $azGroup.DisplayName
+        }
     }
+    
+    
+    "<h2>Get-MsolGroup</h2>" | Out-File -Append -FilePath $outputPath
+    $msolGroups | Select-Object -Property DisplayName, EmailAddress | ConvertTo-Html -As List | Out-File -Append -FilePath $outputPath
 
 
-    Write-Host -NoNewline "`t`t`tRetrieving Extended Group Information ... "
-    $grouplist | Format-Table -Property DisplayName, Description, GroupType -Autosize | out-string -width 1024 | Out-File -Append -FilePath .\${CURRENTJOB}.O365.Groups_Advanced.txt
+    "<h2>Get-AzureADGroup</h2>" | Out-File -Append -FilePath $outputPath
+    $azGroups | Select-Object -Property DisplayName, Description, Mail | ConvertTo-Html -As List | Out-File -Append -FilePath $outputPath
 
 }

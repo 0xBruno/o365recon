@@ -41,16 +41,16 @@ $projectName =  Split-Path -Path $outputPath -Leaf
 
 
 # Report header
-"
+@"
 <h1>O365 Recon Report</h1>
 <code>Project: $projectName</code>
 <br>
 <code>Date: $(Get-Date)</code>
 <br>
-<code><i>Note: This tools summarizes the most relevant recon information.
+<code><i>Note: This tools summarizes relevant recon information.
 For full information run the command in the header of each section.</i></code>
 <br>
-" | Out-File -Append -FilePath $reportPath
+"@ | Out-File -Append -FilePath $reportPath
 
 # Get company information.
 Get-CompanyInfo $reportPath
@@ -59,28 +59,25 @@ Get-CompanyInfo $reportPath
 Get-DomainInfo $reportPath
 
 # Get user information.
-Get-UserInfo
+Get-UserInfo $reportPath
 
 # Get group information.
-Get-GroupInfo
+Get-GroupInfo $reportPath
 
 # Get role membership.
-Get-RoleMembership
+Get-RoleMembership $reportPath
 
 # Get device information.
-Get-DeviceInfo
-
-# User/Group/Device Statistics - for Report Only
-Get-ReconStatistics
+Get-DeviceInfo $reportPath
 
 # Application Security Report
-
 # Use permission settings
-Get-AADApplications
+Get-AADApplications $reportPath
 
 # Perform membership checks. 
-Invoke-MembershipChecks
+Invoke-MembershipChecks $reportPath
 
-Get-ChildItem .\${CURRENTJOB}*
+# User/Group/Device Statistics - for Report Only
+Get-ReconStatistics $reportPath
 
 # haec programma meum est. multa similia sunt, sed haec una mea est.

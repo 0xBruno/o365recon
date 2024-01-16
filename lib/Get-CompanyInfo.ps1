@@ -2,7 +2,7 @@ function Get-CompanyInfo {
     param([string]$outputPath)
 
     
-    Write-Host -NoNewline "[*] Retrieving Company Info ... "
+    Write-Host "[*] Retrieving Company Info ... "
 
     # Selecting properties and renaming to something report friendlier
     $msolCompanyInfo = Get-MsolCompanyInformation | Select-Object @{
@@ -44,8 +44,11 @@ function Get-CompanyInfo {
     }
 
     "<h2>Get-MsolCompanyInformation</h2>" | Out-File -Append -FilePath $outputPath
+    $msolCompanyInfo | Write-Host -ForegroundColor Yellow 
     ConvertTo-Html -InputObject $msolCompanyInfo -As List | Out-File -Append -FilePath $outputPath
     "<h2>Get-MsolSubscription</h2>" | Out-File -Append -FilePath $outputPath
-    ConvertTo-Html -InputObject (Get-MsolSubscription) -As List | Out-File -Append -FilePath $outputPath
+    $msolSubscrip = Get-MsolSubscription
+    $msolSubscrip | Write-Host -ForegroundColor Yellow 
+    ConvertTo-Html -InputObject $msolSubscrip -As List | Out-File -Append -FilePath $outputPath
     
 }
